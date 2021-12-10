@@ -35,6 +35,10 @@ if OS_HAIKU
 SUBDIRS += libusb
 endif
 
+if OS_OS2
+SUBDIRS += libusb
+endif
+
 if OS_WINDOWS
 SUBDIRS += windows
 endif

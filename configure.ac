@@ -138,6 +138,19 @@ case $host in
 	threads="windows"
 	win_implementation="cygwin"
 	;;
+*-os2*)
+    AC_MSG_RESULT([ (OS2 back-end)])
+    AC_DEFINE(OS_OS2, 1, [OS2 implementation])
+    AC_SUBST(OS_OS2)
+    backend="libusb"
+    os="os2"
+    threads="pthreads"
+    LDFLAGS="$LDFLAGS -Zomf -Zbin-files -Zmap"
+    LIBS="$LIBS -lcx"
+    PKG_CHECK_MODULES([libusb], [libusb-1.0 >= 1.0.9], true, [hidapi_lib_error libusb-1.0])
+    LIBS_LIBUSB_PRIVATE="${LIBS_LIBUSB_PRIVATE} $libusb_LIBS"
+    CFLAGS_LIBUSB="${CFLAGS_LIBUSB} $libusb_CFLAGS"
+    ;;	
 *)
 	AC_MSG_ERROR([HIDAPI is not supported on your operating system yet])
 esac
@@ -231,6 +244,7 @@ AM_CONDITIONAL(OS_DARWIN, test "x$os" = xdarwin)
 AM_CONDITIONAL(OS_FREEBSD, test "x$os" = xfreebsd)
 AM_CONDITIONAL(OS_KFREEBSD, test "x$os" = xkfreebsd)
 AM_CONDITIONAL(OS_HAIKU, test "x$os" = xhaiku)
+AM_CONDITIONAL(OS_OS2, test "x$os" = xos2)
 AM_CONDITIONAL(OS_WINDOWS, test "x$os" = xwindows)
 
 AC_CONFIG_HEADERS([config.h])

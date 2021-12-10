@@ -51,7 +51,7 @@
 
 #include "hidapi_libusb.h"
 
-#if defined(__ANDROID__) && __ANDROID_API__ < __ANDROID_API_N__
+#if (defined(__ANDROID__) && __ANDROID_API__ < __ANDROID_API_N__) || defined(__OS2__)
 
 /* Barrier implementation because Android/Bionic don't have pthread_barrier.
    This implementation came from Brent Priddy and was posted on
@@ -110,6 +110,26 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 	}
 }
 
+#endif
+
+#if defined(__OS2__) && !defined(wcsdup)
+#include <wchar.h>
+#include <string.h>
+#include <stdlib.h>
+	
+
+/* Duplicate S, returning an identical malloc'd string.	 */
+wchar_t *
+wcsdup (const wchar_t *s)
+{
+	size_t len = (wcslen (s) + 1) * sizeof (wchar_t);
+	void *new = malloc (len);
+
+	if (new == NULL)
+		return NULL;
+
+	return (wchar_t *) memcpy (new, (void *) s, len);
+}
 #endif
 
 #ifdef __cplusplus
@@ -427,7 +447,7 @@ static wchar_t *get_usb_string(libusb_device_handle *dev, uint8_t idx)
 	if (len < 0)
 		return NULL;
 
-#if defined(__ANDROID__) || defined(NO_ICONV)
+#if defined(__ANDROID__) || defined(NO_ICONV) || defined(__OS2__)
 
 	/* Bionic does not have iconv support nor wcsdup() function, so it
 	   has to be done manually.  The following code will only work for
@@ -609,7 +629,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						res = libusb_open(dev, &handle);
 
 						if (res >= 0) {
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__OS2__)
 							/* There is (a potential) libusb Android backend, in which
 							   device descriptor is not accurate up until the device is opened.
 							   https://github.com/libusb/libusb/pull/874#discussion_r632801373
